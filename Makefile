@@ -10,7 +10,7 @@ procstat: procstat.c
 	gcc -o procstat procstat.c
 
 test1: dine
-	./dine
+	./dine -pthread
 
 test2: procstat
 	./procstat $(PID)
@@ -19,9 +19,9 @@ clean:
 	rm -f dine procstat
 	rm -f *~
 
-zip:
+tar:
 	make clean
 	mkdir $(STUDENT_ID)-procfs-lab
 	cp Makefile dine.c $(STUDENT_ID)-procfs-lab/
-	zip -r $(STUDENT_ID)-procfs-lab.zip $(STUDENT_ID)-procfs-lab
+	tar cvzf $(STUDENT_ID)-procfs-lab.tar.gz $(STUDENT_ID)-procfs-lab
 	rm -rf $(STUDENT_ID)-procfs-lab
