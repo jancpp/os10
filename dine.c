@@ -17,7 +17,7 @@
 #define FIELDS_TO_IGNORE 13
 
 #define DEADLOCK 1
-#define ACTIVE_DURATION 200
+#define ACTIVE_DURATION 1000
 
 typedef struct {
   pthread_t thread;
@@ -227,14 +227,16 @@ int check_for_deadlock()
      * 1. Store the stat filename for this diner into a buffer. Use the sprintf
      * library call.
      */
-    sprintf (filename, "proc/self/task/%d/stat", diners[i].tid);
 
+sprintf (filename, "/proc/self/task/%d/stat", diners[i].tid);
     /*
      * 2. Use fopen to open the stat file as a file stream. Open it
      * with read only permissions.
      */
 
-     statf = fopen(filename, "r");
+statf = fopen(filename, "r");
+
+
 
     /*
      * 3. Seek over uninteresting fields. Use fscanf to perform the seek.  You
@@ -242,40 +244,49 @@ int check_for_deadlock()
      * HINT: Use the the * qualifier to skip tokens without storing them.
      */
 
+
      for (j=0; j<FIELDS_TO_IGNORE; j++) {
-             fscanf(statf, "%*s");
-     }
+                 fscanf(statf, "%*s");
+         }
+
+
+
 
     /*
      * 4. Read the time values you want. Use fscanf again.
      */
 
-          fscanf(statf, "%lu %lu", &new_user_time, &new_sys_time);
+fscanf(statf, "%lu", &new_user_time);
+fscanf(statf, "%lu", &new_sys_time);
+
+
 
     /*
      * 5. Use time values to determine if deadlock has occurred.
      */
 
-     if((new_user_time > user_time[i]) || (new_sys_time > sys_time[i])){
-       deadlock = 0;
-     }
+     if(new_sys_time != sys_time[i] || user_time[i] != new_user_time) {
+       user_progress[i]    = new_user_time - user_progress[i];
+         user_time[i]        = new_user_time;
+         sys_progress[i]     = new_sys_time - sys_progress[i];
+         sys_time[i]         = new_sys_time;
 
-     sys_progress[i] = new_sys_time - sys_time[i];
+         deadlock = 0;
+}
 
-     user_progress[i] = new_user_time - user_time[i];
 
-     sys_time[i] = new_sys_time;
 
-     user_time[i] = new_user_time;
+
+
 
 
 
     /*
      * 6. Close the stat file stream
      */
-
-     fclose(statf);
+fclose(statf);
   }
+
   return deadlock;
 }
 
